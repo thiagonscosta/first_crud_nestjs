@@ -12,6 +12,12 @@ export class Person {
     @Column()
     lastName: string;
 
+    @Column()
+    gender: string;
+
+    @Column()
+    email: string;
+
     @Column('date')
     birthday: Date;
 
