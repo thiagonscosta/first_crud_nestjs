@@ -3,15 +3,20 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, UpdateResult, DeleteResult } from 'typeorm';
 import { Person } from './person.entity';
 
-@Injectable()
-export class PersonService {
+import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+
+@Injectable() @WebSocketGateway()
+export class PersonService  {
+    @WebSocketServer() server;
 
     constructor(@InjectRepository(Person) private personsRepository: Repository<Person>) {
 
     }
-
+    
     async getAll(): Promise<Person[]> {
-        return await this.personsRepository.find();
+        const res = await this.personsRepository.find();
+        const people = res.reverse();
+        return people;
     }
 
     async get(id: number): Promise<Person> {
@@ -19,7 +24,9 @@ export class PersonService {
     }
 
     async create(person: Person): Promise<Person> {
-        return await this.personsRepository.save(person);
+        const p = await this.personsRepository.save(person);
+        this.server.emit('new_person', p)
+        return p;
     }
 
     async update(person: Person): Promise<UpdateResult> {
